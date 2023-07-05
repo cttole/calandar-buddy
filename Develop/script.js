@@ -1,20 +1,3 @@
-// Wrap all code that interacts with the DOM in a call to jQuery to ensure that
-// the code isn't run until the browser has finished rendering all the elements
-// in the html.
-
-//        GIVEN I am using a daily planner to create a schedule
-//        WHEN I open the planner
-//  DONE  THEN the current day is displayed at the top of the calendar
-//        WHEN I scroll down
-//  DONE  THEN I am presented with time blocks for standard business hours of 9am to 5pm
-//        WHEN I view the time blocks for that day
-//        THEN each time block is color-coded to indicate whether it is in the past, present, or future
-//        WHEN I click into a time block
-//        THEN I can enter an event
-//        WHEN I click the save button for that time block
-//        THEN the text for that event is saved in local storage
-//        WHEN I refresh the page
-//        THEN the saved events persist
 
 // current date function
 var currentDate = dayjs().format("MMM D, YYYY");
@@ -52,9 +35,9 @@ function updateTimeBlocks() {
   timeBlocks.forEach(function (timeBlock) {
     
     var hour = parseInt(timeBlock.id.split("-")[1]);
-    console.log("hours:" + hour);
+    //console.log("hours:" + hour);
     var formattedHour = Number(dayjs().hour(hour).format("H"));
-    console.log("formattedHour:" + formattedHour);
+    //console.log("formattedHour:" + formattedHour);
 
     // Compare the current time with the time of the time block
     if (currentTime > formattedHour) {
@@ -73,10 +56,57 @@ console.log(currentTime)
 
 updateTimeBlocks();
 
-// Update the classes every minute to reflect the current time
+// update the classes every minute to give the current time
 setInterval(updateTimeBlocks, 60000);
 
-$(function () {
+
+// function to save the event to local storage
+function saveEvent(event) {
+  const timeBlock = event.target.parentNode;
+  const timeBlockId = timeBlock.id;
+  const eventText = timeBlock.querySelector('.description').value;
+
+  if (eventText) {
+    localStorage.setItem(timeBlockId, eventText);
+    console.log(`Event saved for ${timeBlockId}`);
+  } else {
+    localStorage.removeItem(timeBlockId);
+    console.log(`Event removed for ${timeBlockId}`);
+  }
+}
+
+// function to load saved events from local storage
+function loadEvents() {
+  const timeBlocks = document.getElementsByClassName('time-block');
+
+  for (let i = 0; i < timeBlocks.length; i++) {
+    const timeBlock = timeBlocks[i];
+    const timeBlockId = timeBlock.id;
+    const eventText = localStorage.getItem(timeBlockId);
+
+    if (eventText) {
+      timeBlock.querySelector('.description').value = eventText;
+    }
+  }
+}
+
+// load saved events when the page loads
+window.addEventListener('load', loadEvents);
+
+// Attach click event listener to each save button
+const saveButtons = document.getElementsByClassName('saveBtn');
+for (let i = 0; i < saveButtons.length; i++) {
+  saveButtons[i].addEventListener('click', saveEvent);
+}
+
+
+
+
+
+
+
+
+
   // TODO: Add a listener for click events on the save button. This code should
   // use the id in the containing time-block as a key to save the user input in
   // local storage. HINT: What does `this` reference in the click listener
@@ -95,4 +125,3 @@ $(function () {
   // attribute of each time-block be used to do this?
   //
   // TODO: Add code to display the current date in the header of the page.
-});
